@@ -1,4 +1,5 @@
 Animation
 =========
 
-Animation binaries (jar)
+Raspberry-Pi Animation Station
+
