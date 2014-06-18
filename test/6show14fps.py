@@ -24,7 +24,7 @@ cv.ResizeWindow("window", 640, 480)
 
 for x in range (1, fps+1):
 	#print stFileName+str(x)+".jpg"
-	frame = cv2.imread(stFileName+str(x)+".jpg")
+	frame = cv2.imread(stFileName+str(x).zfill(3)+".jpg")
 	frames.append(frame)
 
 cv2.imshow("window",frames[0])
