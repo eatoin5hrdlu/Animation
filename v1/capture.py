@@ -1,0 +1,2 @@
+def captureImage ():
+	print "captureImage"

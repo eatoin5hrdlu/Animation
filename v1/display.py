@@ -1,0 +1,2 @@
+def displayImage ():
+	print "displayImage"

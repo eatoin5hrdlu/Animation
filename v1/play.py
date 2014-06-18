@@ -1,0 +1,2 @@
+def playVideo ():
+	print "playVideo"
