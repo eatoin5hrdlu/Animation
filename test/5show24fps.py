@@ -24,7 +24,7 @@ time.sleep(1)
 print "Start: " + str(datetime.datetime.now())
 for x in range (1, fps+1):
 	#print stFileName+str(x)+".jpg"
-	frame = cv2.imread(stFileName+str(x)+".jpg")
+	frame = cv2.imread(stFileName+str(x).zfill(3)+".jpg")
 	cv2.imshow("window",frame)
 	if cv2.waitKey(1) == 27:
 		break
