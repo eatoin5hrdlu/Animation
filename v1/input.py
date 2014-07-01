@@ -24,14 +24,21 @@ def getInput ():
 			webcam.read() #discard first frame from webcam to make sure image is in sync 
 			print "Press the button to take a picture"
 			while True:
-				if cv2.waitKey(10) == 27:
-					break
 				ret, frame = webcam.read()
-				if not GPIO.input(pin7):
-					cv2.imshow("window", frame)
-					x=x+1
-					cv2.imwrite(stFileName+str(x)+".jpg",frame)
-					print "Button pressed " + str(x) + " times."
+				cv2.imshow("window", frame)
+				#if not GPIO.input(pin7):
+				#	cv2.imshow("window", frame)
+				#	x=x+1
+				#	cv2.imwrite(stFileName+str(x)+".jpg",frame)
+				#	print "Button pressed " + str(x) + " times."
+				x=cv2.waitKey(10)
+				if x == 27:
+					break
+				elif x ==	ord(' '): # Replace with the acsii value
+					print "a key pressed"
+				elif x == ord('b'): 
+					print "b key pressed"
+						
 				sleep(0.2)
 		else:
 			ret=False

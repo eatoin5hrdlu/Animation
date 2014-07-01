@@ -8,6 +8,7 @@ import save
 
 init.printVersions()
 init.initializeCamera()
+
 input.getInput()
 capture.captureImage()
 delete.deleteImage()
