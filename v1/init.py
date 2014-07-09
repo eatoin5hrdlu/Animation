@@ -8,3 +8,7 @@ def initializeCamera ():
 def printVersions():
 	print "python version " + sys.version
 	print "cv version " + cv2.__version__
+
+
+def newMovie():
+	print "newMovie called"

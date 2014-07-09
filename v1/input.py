@@ -1,4 +1,11 @@
+import capture
+import delete
+import display
+import play
+import save
+import init
 def getInput ():
+	
 ## read buttons/keys
 ## if Raspberry Pi, read gpio pins
 	print "get input"
@@ -34,10 +41,27 @@ def getInput ():
 				x=cv2.waitKey(10)
 				if x == 27:
 					break
-				elif x ==	ord(' '): # Replace with the acsii value
-					print "a key pressed"
-				elif x == ord('b'): 
-					print "b key pressed"
+				elif x ==	ord('n'): # Replace with the acsii value
+					print "n key pressed"
+					init.newMovie()
+				elif x == ord(' '):
+					capture.captureImage() 
+					print "space key pressed"
+				elif x ==	ord('d'): # Replace with the acsii value
+					print "d key pressed"
+					delete.deleteImage()
+				elif x ==	ord('p'): # Replace with the acsii value
+					print "p key pressed"
+					play.playVideo()
+				elif x ==	ord('-'): # Replace with the acsii value
+					print "- key pressed"
+					play.slower()
+				elif x ==	ord('='): # Replace with the acsii value
+					print "= key pressed"
+					play.faster()
+				elif x ==	ord('u'): # Replace with the acsii value
+					print "u key pressed"
+					save.uploadVideo()
 						
 				sleep(0.2)
 		else:

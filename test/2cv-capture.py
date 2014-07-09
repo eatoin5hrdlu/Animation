@@ -1,5 +1,7 @@
 import cv2
 import sys
+from PIL import Image
+import numpy as np
 
 print "python version " + sys.version
 print "cv version " + cv2.__version__
