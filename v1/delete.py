@@ -1,2 +1,0 @@
-def deleteImage ():
-	print "deleteImage"
