@@ -4,16 +4,24 @@ import sys
 import os
 import subprocess
 from time import sleep
+import numpy as np
 
 
 def deleteImage ():
 	global framenum
+	global lastFrame
+
 	print "deleteImage"
 	if framenum > 0:
 		stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg"
 		os.unlink(stFileName)
 		print "Deleted " + stFileName
 		framenum = framenum - 1
+		## Load the previous frame into lastFrame so the onionskin effect works
+		if framenum > 0:
+			lastFrame = cv2.imread(FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg")
+		else:
+			lastFrame = ""
 		modifiedMovie()
 
 
@@ -27,7 +35,7 @@ def initializeCamera ():
 	print "initializing camera"
 	global webcam
 	
-	webcam = cv2.VideoCapture(0)
+	webcam = cv2.VideoCapture(1)
 	if webcam.isOpened():
 		print "Press Esc to exit"
 		webcam.read() #discard first frame from webcam to make sure image is in sync
@@ -63,16 +71,17 @@ def modifiedMovie():
 def captureImage ():
 	global framenum
 	global webcam
-	
+	global lastFrame
+#	global avg1
 	print "captureImage"
 	
-	ret, frame = webcam.read()
+	ret, lastFrame = webcam.read()
+#	avg1=np.float32(lastFrame)
 	framenum = framenum + 1
 	stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg" 
-	cv2.imwrite(stFileName,frame)
+	cv2.imwrite(stFileName,lastFrame)
 	print "Saved " + stFileName
-	modifiedMovie()
-	
+	modifiedMovie()	
 
 
 
@@ -127,11 +136,17 @@ def getInput ():
 	print "get input"
 	keycode = 0
 	global webcam
-	
+	global lastFrame
+
 	while True:
 		ret, frame = webcam.read()
-		cv2.imshow("window", frame)
-		keycode=cv2.waitKey(10)
+		if framenum > 0:
+			avg1 = np.float32(lastFrame)
+			cv2.accumulateWeighted(frame, avg1, ALPHA)
+			frame = cv2.convertScaleAbs(avg1)
+
+		cv2.imshow("Live Video", frame)
+		keycode = cv2.waitKey(10)
 		if keycode > 255:
 			print "Make sure caps lock and num lock are off!  Keycode=" + str(keycode)
 		if keycode == 27:
@@ -168,10 +183,13 @@ MIN_FPS = const.MIN_FPS
 FPS_STEP = const.FPS_STEP
 FILENAME_LENGTH = const.FILENAME_LENGTH
 FILE_PATH = const.FILE_PATH
+ALPHA = const.ALPHA
 framenum=0
+lastFrame=""
 webcam=""
 modified = True	# Track unsaved changes
 savedMovies = "" # Track saved versions when modified = False, clear when modified = True
+#avg1=np.float32(1)
 
 ### Main program ###
 try:
@@ -180,4 +198,5 @@ try:
 		getInput()
 finally:
 	cv2.destroyAllWindows()
+	webcam.release()
 	print "Done."
