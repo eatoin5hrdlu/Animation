@@ -2,6 +2,7 @@ import const
 import cv2
 import sys
 import os
+import glob
 import subprocess
 from time import sleep
 import numpy as np
@@ -35,7 +36,7 @@ def initializeCamera ():
 	print "initializing camera"
 	global webcam
 	
-	webcam = cv2.VideoCapture(1)
+	webcam = cv2.VideoCapture(CAMERA)
 	if webcam.isOpened():
 		print "Press Esc to exit"
 		webcam.read() #discard first frame from webcam to make sure image is in sync
@@ -52,13 +53,28 @@ def printVersions():
 
 
 def newMovie():
+	answer = ""
 	print "newMovie called"
-	#if framenum > 20
-	#	save movie
-	# Clear frames directory
-	modifiedMovie()
-	
-	
+	if framenum > 20 and modified == True:
+		### need to debug ###
+		### NameError: name 'y' is not defined ###
+		answer = input( "Do you want to save your changes (y/n)?" )
+		if answer == "y" :
+			saveVideo()
+		else:
+			resetProgram()
+	else:
+		resetProgram()		
+		
+
+def resetProgram():
+	print "Clearing the frames directory"
+	pathStr = FILE_PATH + "*.jpg"
+	for filename in glob.glob(pathStr):
+		os.remove( filename )
+	# clear filmstrip on screen
+	# reset frame rate variable
+				
 def modifiedMovie():
 	print "modifiedMovie called"
 	global modified
@@ -77,7 +93,7 @@ def captureImage ():
 	
 	ret, lastFrame = webcam.read()
 #	avg1=np.float32(lastFrame)
-	framenum = framenum + 1
+	framenum = framenum + 1 
 	stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg" 
 	cv2.imwrite(stFileName,lastFrame)
 	print "Saved " + stFileName
@@ -184,6 +200,7 @@ FPS_STEP = const.FPS_STEP
 FILENAME_LENGTH = const.FILENAME_LENGTH
 FILE_PATH = const.FILE_PATH
 ALPHA = const.ALPHA
+CAMERA=const.CAMERA
 framenum=0
 lastFrame=""
 webcam=""
