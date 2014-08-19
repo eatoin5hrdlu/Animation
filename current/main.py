@@ -2,9 +2,10 @@ import const
 import cv2
 import sys
 import os
+import errno
 import glob
 import subprocess
-from time import sleep
+import time
 import numpy as np
 
 
@@ -56,10 +57,8 @@ def newMovie():
 	answer = ""
 	print "newMovie called"
 	if framenum > 20 and modified == True:
-		### need to debug ###
-		### NameError: name 'y' is not defined ###
-		answer = input( "Do you want to save your changes (y/n)?" )
-		if answer == "y" :
+		answer = raw_input( "Do you want to save your changes (y/n)?" ) ####use raw_input instead of input####
+		if answer == 'y' :
 			saveVideo()
 		else:
 			resetProgram()
@@ -68,13 +67,43 @@ def newMovie():
 		
 
 def resetProgram():
+	global fps
+	global lastFrame
+	global framenum
 	print "Clearing the frames directory"
 	pathStr = FILE_PATH + "*.jpg"
 	for filename in glob.glob(pathStr):
 		os.remove( filename )
 	# clear filmstrip on screen
 	# reset frame rate variable
-				
+	fps = const.DEFAULT_FPS
+	# clear last frame
+	lastFrame=""
+	framenum=0
+	# reset framenum
+
+
+def resumeProgram():
+	global framenum
+	global lastFrame
+	global avg1
+	
+	print "resumeProgram"
+	pathStr = FILE_PATH + "*.jpg"
+	files  = glob.glob(pathStr)
+	files.sort()
+	for filename in files:
+		print filename
+	#if frames exist
+	framenum = len(files)
+	
+	if framenum > 0:
+		#display last image
+		stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg"
+		lastFrame = cv2.imread(FILE_PATH + str(framenum).zfill(6)+".jpg")
+		avg1 = np.float32(lastFrame)
+	#initialize filmstrip display
+	
 def modifiedMovie():
 	print "modifiedMovie called"
 	global modified
@@ -88,11 +117,11 @@ def captureImage ():
 	global framenum
 	global webcam
 	global lastFrame
-#	global avg1
+	global avg1
 	print "captureImage"
 	
 	ret, lastFrame = webcam.read()
-#	avg1=np.float32(lastFrame)
+	avg1=np.float32(lastFrame)
 	framenum = framenum + 1 
 	stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg" 
 	cv2.imwrite(stFileName,lastFrame)
@@ -104,18 +133,45 @@ def captureImage ():
 def playVideo ():
 	print "playVideo"
 	# Temporarily use mplayer to render and play the video
-	global fps
-	videocmd = "mplayer -mf fps=" + str(fps) + ":type=jpg *.jpg mf://" + FILE_PATH + "*.jpg"
-	process = subprocess.Popen(videocmd, shell=True)
+	# decide whether to show images and delay or render the video
+	global fps	# Should this be global?
+	frames=[]
+	print "frames=" + str(framenum)
+	#videocmd = "mplayer -mf fps=" + str(fps) + ":type=jpg *.jpg mf://" + FILE_PATH + "*.jpg"
+	#process = subprocess.Popen(videocmd, shell=True)
+	for x in range (1, framenum+1):
+		frame = cv2.imread(FILE_PATH + str(x).zfill(6)+".jpg")
+		frames.append(frame)
+
+	cv2.imshow("play window",frames[0])
+	cv2.waitKey(500)
+
+	for x in range (0, framenum):
+		cv2.imshow("play window",frames[x])
+		keycode = cv2.waitKey(1)
+		time.sleep(1/fps)
+	#wait 1 second before closing the window
+	time.sleep(1)
+	cv2.destroyWindow("play window")
+
 	
-	
-def saveVideo ():
+def saveVideo():
 	print "playVideo"
 	# Temporarily use mplayer to render and play the video
 	global fps
+	FPS_OUT=24
 	videocmd = "mplayer -mf fps=" + str(fps) + ":type=jpg *.jpg mf://" + FILE_PATH + "*.jpg"
-	process = subprocess.Popen(videocmd, shell=True)	
-
+	#process = subprocess.Popen(videocmd, shell=True)
+	#avconv -i ./*.jpg -r 3 movie.mp4	
+	#avconv -f image2 -i frame%03d.jpg -r 12 -s 160x120 movie.avi
+	#os.system("avconv -r %s -i frame%03d.jpg -r %s -vcodec libx264 -crf -g 15 movie.mp4"%(fps,FPS_OUT))
+	#videocmd="avconv -r " + str(fps) + " -i ./frames/%06d.jpg -r " + str("24") + "-vcodec libx264 -crf -g 15 movie.mp4"
+	videocmd="avconv -r " + str(fps) + " -i " + FILE_PATH + "%06d.jpg -r " + str("24") + " " + MOVIE_PATH + "movie.mpg" # generate movie filename
+	print "videocmd = " + videocmd
+	process = subprocess.Popen(videocmd, shell=True)
+	#os.system(videocmd)
+	print "finished saving"
+	
 
 def faster():
 	print "faster called"
@@ -139,10 +195,6 @@ def slower():
 	print "fps=" + str(fps)
 	
 
-def saveVideo():
-	print "saveVideo"
-
-
 def uploadVideo():
 	print "uploadVideo"
 
@@ -153,12 +205,16 @@ def getInput ():
 	keycode = 0
 	global webcam
 	global lastFrame
-
+	global avg1
+	
+	avgTemp=[]
 	while True:
 		ret, frame = webcam.read()
 		if framenum > 0:
 			avg1 = np.float32(lastFrame)
-			cv2.accumulateWeighted(frame, avg1, ALPHA)
+			#np.copyto(avgTemp,avg1)
+			#avgTemp = np.array(avg1)
+		#	cv2.accumulateWeighted(frame, avg1, ALPHA)
 			frame = cv2.convertScaleAbs(avg1)
 
 		cv2.imshow("Live Video", frame)
@@ -188,9 +244,18 @@ def getInput ():
 		elif keycode ==	ord('u'): # Replace with the acsii value
 			print "u key pressed"
 			uploadVideo()
+		elif keycode ==	ord('s'): # Replace with the acsii value
+			print "s key pressed"
+			saveVideo()
 						
-		sleep(0.2)
+		#time.sleep(0.5)
 
+def pathExists(path):
+	try:
+		os.makedirs(path)
+	except OSError as exception:
+		if exception.errno !=errno.EEXIST:
+			raise
 
 ### Initialize variables ###
 fps = const.DEFAULT_FPS
@@ -199,19 +264,26 @@ MIN_FPS = const.MIN_FPS
 FPS_STEP = const.FPS_STEP
 FILENAME_LENGTH = const.FILENAME_LENGTH
 FILE_PATH = const.FILE_PATH
+MOVIE_PATH = const.MOVIE_PATH
 ALPHA = const.ALPHA
 CAMERA=const.CAMERA
 framenum=0
 lastFrame=""
 webcam=""
+avg1=[]
+avgbackup=[]
 modified = True	# Track unsaved changes
 savedMovies = "" # Track saved versions when modified = False, clear when modified = True
 #avg1=np.float32(1)
+#create frames and movie directories if they don't exist
+pathExists(FILE_PATH)
+pathExists(MOVIE_PATH)
 
 ### Main program ###
 try:
 	printVersions()
 	if initializeCamera() == True:
+		resumeProgram()
 		getInput()
 finally:
 	cv2.destroyAllWindows()
