@@ -5,5 +5,5 @@ DEFAULT_FPS = 12
 FILENAME_LENGTH = 6
 FILE_PATH = "./frames/"
 MOVIE_PATH = "./movies/"
-ALPHA = 0.5
+ALPHA = 0.2
 CAMERA=0

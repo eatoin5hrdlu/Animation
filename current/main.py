@@ -86,7 +86,7 @@ def resetProgram():
 def resumeProgram():
 	global framenum
 	global lastFrame
-	global avg1
+	#global avg1
 	
 	print "resumeProgram"
 	pathStr = FILE_PATH + "*.jpg"
@@ -101,7 +101,7 @@ def resumeProgram():
 		#display last image
 		stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg"
 		lastFrame = cv2.imread(FILE_PATH + str(framenum).zfill(6)+".jpg")
-		avg1 = np.float32(lastFrame)
+		#avg1 = np.float32(lastFrame)
 	#initialize filmstrip display
 	
 def modifiedMovie():
@@ -117,11 +117,11 @@ def captureImage ():
 	global framenum
 	global webcam
 	global lastFrame
-	global avg1
+	#global avg1
 	print "captureImage"
 	
 	ret, lastFrame = webcam.read()
-	avg1=np.float32(lastFrame)
+	#avg1=np.float32(lastFrame)
 	framenum = framenum + 1 
 	stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg" 
 	cv2.imwrite(stFileName,lastFrame)
@@ -205,19 +205,22 @@ def getInput ():
 	keycode = 0
 	global webcam
 	global lastFrame
-	global avg1
+	#global avg1
 	
 	avgTemp=[]
 	while True:
 		ret, frame = webcam.read()
-		if framenum > 0:
-			avg1 = np.float32(lastFrame)
-			#np.copyto(avgTemp,avg1)
-			#avgTemp = np.array(avg1)
-		#	cv2.accumulateWeighted(frame, avg1, ALPHA)
-			frame = cv2.convertScaleAbs(avg1)
+#		if framenum > 0:
+#			avg1 = np.float32(lastFrame)
+#			#np.copyto(avgTemp,avg1)
+#			#avgTemp = np.array(avg1)
+#			cv2.accumulateWeighted(frame, avg1, ALPHA) #ALPHA was 0.5 for this method
+#			frame = cv2.convertScaleAbs(avg1)
+#		cv2.imshow("Live Video", frame)
 
-		cv2.imshow("Live Video", frame)
+		dst = cv2.addWeighted(frame, 1, lastFrame, ALPHA, 0)  #ALPHA is 0.2
+		cv2.imshow("Live Video", dst)
+
 		keycode = cv2.waitKey(10)
 		if keycode > 255:
 			print "Make sure caps lock and num lock are off!  Keycode=" + str(keycode)
@@ -248,7 +251,7 @@ def getInput ():
 			print "s key pressed"
 			saveVideo()
 						
-		#time.sleep(0.5)
+		time.sleep(0.05)
 
 def pathExists(path):
 	try:
