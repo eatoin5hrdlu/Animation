@@ -60,6 +60,7 @@ def newMovie():
 		answer = raw_input( "Do you want to save your changes (y/n)?" ) ####use raw_input instead of input####
 		if answer == 'y' :
 			saveVideo()
+			# should we reset the program here, or press new movie again?
 		else:
 			resetProgram()
 	else:
@@ -160,17 +161,19 @@ def saveVideo():
 	# Temporarily use mplayer to render and play the video
 	global fps
 	FPS_OUT=24
-	videocmd = "mplayer -mf fps=" + str(fps) + ":type=jpg *.jpg mf://" + FILE_PATH + "*.jpg"
-	#process = subprocess.Popen(videocmd, shell=True)
-	#avconv -i ./*.jpg -r 3 movie.mp4	
-	#avconv -f image2 -i frame%03d.jpg -r 12 -s 160x120 movie.avi
-	#os.system("avconv -r %s -i frame%03d.jpg -r %s -vcodec libx264 -crf -g 15 movie.mp4"%(fps,FPS_OUT))
-	#videocmd="avconv -r " + str(fps) + " -i ./frames/%06d.jpg -r " + str("24") + "-vcodec libx264 -crf -g 15 movie.mp4"
-	videocmd="avconv -r " + str(fps) + " -i " + FILE_PATH + "%06d.jpg -r " + str("24") + " " + MOVIE_PATH + "movie.mpg" # generate movie filename
-	print "videocmd = " + videocmd
-	process = subprocess.Popen(videocmd, shell=True)
-	#os.system(videocmd)
-	print "finished saving"
+	if framenum > 0:
+		videocmd = "mplayer -mf fps=" + str(fps) + ":type=jpg *.jpg mf://" + FILE_PATH + "*.jpg"
+		#process = subprocess.Popen(videocmd, shell=True)
+		#avconv -i ./*.jpg -r 3 movie.mp4	
+		#avconv -f image2 -i frame%03d.jpg -r 12 -s 160x120 movie.avi
+		#os.system("avconv -r %s -i frame%03d.jpg -r %s -vcodec libx264 -crf -g 15 movie.mp4"%(fps,FPS_OUT))
+		#videocmd="avconv -r " + str(fps) + " -i ./frames/%06d.jpg -r " + str("24") + "-vcodec libx264 -crf -g 15 movie.mp4"
+		videocmd="avconv -r " + str(fps) + " -i " + FILE_PATH + "%06d.jpg -r " + str("24") + " " + MOVIE_PATH + "movie.mpg" # generate movie filename
+		print "videocmd = " + videocmd
+		# process = subprocess.Popen(videocmd, shell=True) # works, but trying with call instead
+		process = subprocess.call(videocmd, shell=True)
+		#os.system(videocmd)
+		print "finished saving"
 	
 
 def faster():
@@ -197,6 +200,8 @@ def slower():
 
 def uploadVideo():
 	print "uploadVideo"
+	if framenum > 0:
+		print "upload"
 
 
 def getInput ():
@@ -217,37 +222,39 @@ def getInput ():
 #			cv2.accumulateWeighted(frame, avg1, ALPHA) #ALPHA was 0.5 for this method
 #			frame = cv2.convertScaleAbs(avg1)
 #		cv2.imshow("Live Video", frame)
+		if framenum > 0:
+			# Try using Python Imaging Library for the onionskin effect
+			frame = cv2.addWeighted(frame, 1, lastFrame, ALPHA, 0)  #ALPHA is 0.2
 
-		dst = cv2.addWeighted(frame, 1, lastFrame, ALPHA, 0)  #ALPHA is 0.2
-		cv2.imshow("Live Video", dst)
+		cv2.imshow("Live Video", frame)
 
 		keycode = cv2.waitKey(10)
 		if keycode > 255:
 			print "Make sure caps lock and num lock are off!  Keycode=" + str(keycode)
 		if keycode == 27:
 			break
-		elif keycode == ord('n'): # Replace with the acsii value
+		elif keycode == ord(NEWMOVIEKEY): # Replace with the acsii value
 			print "n key pressed"
 			newMovie()
-		elif keycode == ord(' '):
+		elif keycode == ord(CAPTUREIMAGEKEY):
 			captureImage() 
 			print "space key pressed"
-		elif keycode ==	ord('d'): # Replace with the acsii value
+		elif keycode ==	ord(DELETEIMAGEKEY): # Replace with the acsii value
 			print "d key pressed"
 			deleteImage()
-		elif keycode ==	ord('p'): # Replace with the acsii value
+		elif keycode ==	ord(PLAYVIDEOKEY): # Replace with the acsii value
 			print "p key pressed"
 			playVideo()
-		elif keycode ==	ord('-'): # Replace with the acsii value
+		elif keycode ==	ord(SLOWERKEY): # Replace with the acsii value
 			print "- key pressed"
 			slower()
-		elif keycode ==	ord('='): # Replace with the acsii value
+		elif keycode ==	ord(FASTERKEY): # Replace with the acsii value
 			print "= key pressed"
 			faster()
-		elif keycode ==	ord('u'): # Replace with the acsii value
+		elif keycode ==	ord(UPLOADVIDEOKEY): # Replace with the acsii value
 			print "u key pressed"
 			uploadVideo()
-		elif keycode ==	ord('s'): # Replace with the acsii value
+		elif keycode ==	ord(SAVEVIDEOKEY): # Replace with the acsii value
 			print "s key pressed"
 			saveVideo()
 						
@@ -270,6 +277,14 @@ FILE_PATH = const.FILE_PATH
 MOVIE_PATH = const.MOVIE_PATH
 ALPHA = const.ALPHA
 CAMERA=const.CAMERA
+NEWMOVIEKEY = const.NEWMOVIEKEY
+CAPTUREIMAGEKEY = const.CAPTUREIMAGEKEY
+DELETEIMAGEKEY = const.DELETEIMAGEKEY
+PLAYVIDEOKEY = const.PLAYVIDEOKEY
+SLOWERKEY = const.SLOWERKEY
+FASTERKEY = const.FASTERKEY
+UPLOADVIDEOKEY = const.UPLOADVIDEOKEY
+SAVEVIDEOKEY = const.SAVEVIDEOKEY
 framenum=0
 lastFrame=""
 webcam=""
