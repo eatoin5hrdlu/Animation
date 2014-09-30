@@ -1,3 +1,5 @@
+from Tkinter import *
+from ttk import *
 import const
 import cv2
 import sys
@@ -267,6 +269,22 @@ def pathExists(path):
 		if exception.errno !=errno.EEXIST:
 			raise
 
+def setupGui():
+	root = Tk()
+	root.title ('Animation Station')
+	root.overrideredirect(True)  # no window decorations
+	root.geometry("{0}x{1}+0+0".format(root.winfo_screenwidth(), root.winfo_screenheight()))
+	
+	mainframe = Frame(root, padding = '3 3 12 12')
+	mainframe.grid(column=0, row = 0, sticky=(N,W,E,S))
+	mainframe.columnconfigure(0, weight=1)
+	mainframe.rowconfigure(0,weight=1)
+	
+	root.mainloop()
+
+### Golbal Variables ###
+root = ""
+mainframe = ""
 ### Initialize variables ###
 fps = const.DEFAULT_FPS
 MAX_FPS = const.MAX_FPS
@@ -302,6 +320,7 @@ try:
 	printVersions()
 	if initializeCamera() == True:
 		resumeProgram()
+		# SetupGui()
 		getInput()
 finally:
 	cv2.destroyAllWindows()
