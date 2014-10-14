@@ -10,6 +10,7 @@ import subprocess
 import time
 import numpy as np
 
+# When changing hardware, such as the camera or screen, you may need to delete the files in the frames directory
 
 def deleteImage ():
 	global framenum
@@ -41,6 +42,8 @@ def initializeCamera ():
 	
 	webcam = cv2.VideoCapture(CAMERA)
 	if webcam.isOpened():
+		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, preview_width)
+		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, preview_height)
 		print "Press Esc to exit"
 		webcam.read() #discard first frame from webcam to make sure image is in sync
 		ret = True
@@ -52,7 +55,7 @@ def initializeCamera ():
 
 def printVersions():
 	print "python version " + sys.version
-	print "cv version " + cv2.__version__
+	print "cv2.__version__ = " + cv2.__version__
 
 
 def newMovie():
@@ -104,6 +107,8 @@ def resumeProgram():
 		#display last image
 		stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg"
 		lastFrame = cv2.imread(FILE_PATH + str(framenum).zfill(6)+".jpg")
+		# scale the lastFrame image to match the preview_width and preview_height
+		lastFrame = scaleImage(lastFrame)
 		#avg1 = np.float32(lastFrame)
 	#initialize filmstrip display
 	
@@ -123,7 +128,14 @@ def captureImage ():
 	#global avg1
 	print "captureImage"
 	
+	webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
+	webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
+	
 	ret, lastFrame = webcam.read()
+	webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, preview_width)
+	webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, preview_height)
+	# scale the lastFrame image to match the preview_width and preview_height
+	lastFrame = scaleImage(lastFrame)
 	#avg1=np.float32(lastFrame)
 	framenum = framenum + 1 
 	stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg" 
@@ -132,7 +144,12 @@ def captureImage ():
 	modifiedMovie()	
 
 
-
+def scaleImage(img):
+	print "scaleImage"
+	# scale the image to match the preview_width and preview_height
+	return img
+	
+	
 def playVideo ():
 	print "playVideo"
 	# Temporarily use mplayer to render and play the video
@@ -294,7 +311,9 @@ FILENAME_LENGTH = const.FILENAME_LENGTH
 FILE_PATH = const.FILE_PATH
 MOVIE_PATH = const.MOVIE_PATH
 ALPHA = const.ALPHA
-CAMERA=const.CAMERA
+CAMERA = const.CAMERA
+FRAME_WIDTH = const.FRAME_WIDTH
+FRAME_HEIGHT = const.FRAME_HEIGHT
 NEWMOVIEKEY = const.NEWMOVIEKEY
 CAPTUREIMAGEKEY = const.CAPTUREIMAGEKEY
 DELETEIMAGEKEY = const.DELETEIMAGEKEY
@@ -303,6 +322,8 @@ SLOWERKEY = const.SLOWERKEY
 FASTERKEY = const.FASTERKEY
 UPLOADVIDEOKEY = const.UPLOADVIDEOKEY
 SAVEVIDEOKEY = const.SAVEVIDEOKEY
+preview_width = 640
+preview_height = 480
 framenum=0
 lastFrame=""
 webcam=""
