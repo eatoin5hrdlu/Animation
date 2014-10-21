@@ -108,7 +108,7 @@ def resumeProgram():
 		stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg"
 		lastFrame = cv2.imread(FILE_PATH + str(framenum).zfill(6)+".jpg")
 		# scale the lastFrame image to match the preview_width and preview_height
-		lastFrame = scaleImage(lastFrame)
+		lastFrame = scaleImage(lastFrame, preview_width, preview_height)
 		#avg1 = np.float32(lastFrame)
 	#initialize filmstrip display
 	
@@ -134,19 +134,23 @@ def captureImage ():
 	ret, lastFrame = webcam.read()
 	webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, preview_width)
 	webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, preview_height)
-	# scale the lastFrame image to match the preview_width and preview_height
-	lastFrame = scaleImage(lastFrame)
 	#avg1=np.float32(lastFrame)
 	framenum = framenum + 1 
 	stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg" 
 	cv2.imwrite(stFileName,lastFrame)
 	print "Saved " + stFileName
+	# scale the lastFrame image to match the preview_width and preview_height
+	lastFrame = scaleImage(lastFrame, preview_width, preview_height)
 	modifiedMovie()	
 
 
-def scaleImage(img):
+def scaleImage(img, width, height):
 	print "scaleImage"
 	# scale the image to match the preview_width and preview_height
+	# check if image is already the correct size
+	h, w = img.shape[:2]
+	if (h <> height) or (w <> width):
+		img = cv2.resize(img, (width, height), interpolation=cv2.INTER_CUBIC)
 	return img
 	
 	
