@@ -1,5 +1,5 @@
-from Tkinter import *
-from ttk import *
+pi#from Tkinter import *
+#from ttk import *
 import const
 import cv2
 import sys
@@ -8,9 +8,11 @@ import errno
 import glob
 import subprocess
 import time
-import numpy as np
+#import numpy as np
 
 # When changing hardware, such as the camera or screen, you may need to delete the files in the frames directory
+### There seems to be a memory leak in the OpenCV webcam.set method used to change the resolution ###
+### Maybe try using Python Imaging Library to capture the images instead? ###
 
 def deleteImage ():
 	global framenum
@@ -39,13 +41,38 @@ def displayImage ():
 def initializeCamera ():
 	print "initializing camera"
 	global webcam
+	global VIDEO_WIDTH
+	global VIDEO_HEIGHT
+	global IMAGE_WIDTH
+	global IMAGE_HEIGHT
 	
 	webcam = cv2.VideoCapture(CAMERA)
 	if webcam.isOpened():
-		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, preview_width)
-		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, preview_height)
+		# Verify still image resolution
+		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, IMAGE_WIDTH)
+		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, IMAGE_HEIGHT)
+		ret, temp = webcam.read()
+		h, w = temp.shape[:2]
+		print "Image resolution = " + str(w) + "x" + str(h)
+		if (h <> IMAGE_HEIGHT) or (w <> IMAGE_WIDTH):
+			print "*** Changing the image resolution from " + str(IMAGE_WIDTH) + "x" + str(IMAGE_HEIGHT) + " to " + str(w) + "x" + str(h) + " ***"
+			IMAGE_HEIGHT = h
+			IMAGE_WIDTH = w
+		
+		# Verify video resolution
+		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, VIDEO_WIDTH)
+		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, VIDEO_HEIGHT)
 		print "Press Esc to exit"
-		webcam.read() #discard first frame from webcam to make sure image is in sync
+		ret, temp = webcam.read() #discard first frame from webcam to make sure image is in sync
+		# Check webcam resolution
+		h, w = temp.shape[:2]
+		print "Webcam resolution = " + str(w) + "x" + str(h)
+		# If webcam resolution is different from VIDEO_WIDTH and VIDEO_HEIGHT, change the preview resolution
+		# Display a message and override preview_resolution variables
+		if (h <> VIDEO_HEIGHT) or (w <> VIDEO_WIDTH):
+			print "*** Changing the preview resolution from " + str(VIDEO_WIDTH) + "x" + str(VIDEO_HEIGHT) + " to " + str(w) + "x" + str(h) + " ***"
+			VIDEO_HEIGHT = h
+			VIDEO_WIDTH = w
 		ret = True
 	else:
 		ret = False
@@ -107,8 +134,8 @@ def resumeProgram():
 		#display last image
 		stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg"
 		lastFrame = cv2.imread(FILE_PATH + str(framenum).zfill(6)+".jpg")
-		# scale the lastFrame image to match the preview_width and preview_height
-		lastFrame = scaleImage(lastFrame, preview_width, preview_height)
+		# scale the lastFrame image to match the VIDEO_WIDTH and VIDEO_HEIGHT
+		lastFrame = scaleImage(lastFrame, VIDEO_WIDTH, VIDEO_HEIGHT)
 		#avg1 = np.float32(lastFrame)
 	#initialize filmstrip display
 	
@@ -127,26 +154,28 @@ def captureImage ():
 	global lastFrame
 	#global avg1
 	print "captureImage"
+	if (IMAGE_WIDTH <> VIDEO_WIDTH) or (IMAGE_HEIGHT <> VIDEO_HEIGHT):
+		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, IMAGE_WIDTH)
+		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, IMAGE_HEIGHT)
 	
-	webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
-	webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
-	
-	ret, lastFrame = webcam.read()
-	webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, preview_width)
-	webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, preview_height)
+		ret, lastFrame = webcam.read()
+		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, VIDEO_WIDTH)
+		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, VIDEO_HEIGHT)
+	else:
+		ret, lastFrame = webcam.read()
 	#avg1=np.float32(lastFrame)
 	framenum = framenum + 1 
 	stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg" 
 	cv2.imwrite(stFileName,lastFrame)
 	print "Saved " + stFileName
-	# scale the lastFrame image to match the preview_width and preview_height
-	lastFrame = scaleImage(lastFrame, preview_width, preview_height)
+	# scale the lastFrame image to match the VIDEO_WIDTH and VIDEO_HEIGHT
+	lastFrame = scaleImage(lastFrame, VIDEO_WIDTH, VIDEO_HEIGHT)
 	modifiedMovie()	
 
 
 def scaleImage(img, width, height):
 	print "scaleImage"
-	# scale the image to match the preview_width and preview_height
+	# scale the image to match the VIDEO_WIDTH and VIDEO_HEIGHT
 	# check if image is already the correct size
 	h, w = img.shape[:2]
 	if (h <> height) or (w <> width):
@@ -165,6 +194,7 @@ def playVideo ():
 	#process = subprocess.Popen(videocmd, shell=True)
 	for x in range (1, framenum+1):
 		frame = cv2.imread(FILE_PATH + str(x).zfill(6)+".jpg")
+		frame = scaleImage(frame, VIDEO_WIDTH, VIDEO_HEIGHT)
 		frames.append(frame)
 
 	cv2.imshow("play window",frames[0])
@@ -180,7 +210,7 @@ def playVideo ():
 
 	
 def saveVideo():
-	print "playVideo"
+	print "saveVideo"
 	# Temporarily use mplayer to render and play the video
 	global fps
 	FPS_OUT=24
@@ -316,8 +346,8 @@ FILE_PATH = const.FILE_PATH
 MOVIE_PATH = const.MOVIE_PATH
 ALPHA = const.ALPHA
 CAMERA = const.CAMERA
-FRAME_WIDTH = const.FRAME_WIDTH
-FRAME_HEIGHT = const.FRAME_HEIGHT
+IMAGE_WIDTH = const.IMAGE_WIDTH
+IMAGE_HEIGHT = const.IMAGE_HEIGHT
 NEWMOVIEKEY = const.NEWMOVIEKEY
 CAPTUREIMAGEKEY = const.CAPTUREIMAGEKEY
 DELETEIMAGEKEY = const.DELETEIMAGEKEY
@@ -326,8 +356,8 @@ SLOWERKEY = const.SLOWERKEY
 FASTERKEY = const.FASTERKEY
 UPLOADVIDEOKEY = const.UPLOADVIDEOKEY
 SAVEVIDEOKEY = const.SAVEVIDEOKEY
-preview_width = 640
-preview_height = 480
+VIDEO_WIDTH = const.VIDEO_WIDTH
+VIDEO_HEIGHT = const.VIDEO_HEIGHT
 framenum=0
 lastFrame=""
 webcam=""
