@@ -1,4 +1,4 @@
-pi#from Tkinter import *
+#from Tkinter import *
 #from ttk import *
 import const
 import cv2
@@ -8,6 +8,7 @@ import errno
 import glob
 import subprocess
 import time
+import resource
 #import numpy as np
 
 # When changing hardware, such as the camera or screen, you may need to delete the files in the frames directory
@@ -154,6 +155,7 @@ def captureImage ():
 	global lastFrame
 	#global avg1
 	print "captureImage"
+	print "memory before capture = " + str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024)
 	if (IMAGE_WIDTH <> VIDEO_WIDTH) or (IMAGE_HEIGHT <> VIDEO_HEIGHT):
 		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, IMAGE_WIDTH)
 		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, IMAGE_HEIGHT)
@@ -163,6 +165,7 @@ def captureImage ():
 		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, VIDEO_HEIGHT)
 	else:
 		ret, lastFrame = webcam.read()
+	print "memory after capture = " + str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024)
 	#avg1=np.float32(lastFrame)
 	framenum = framenum + 1 
 	stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg" 
@@ -265,7 +268,7 @@ def getInput ():
 	global lastFrame
 	#global avg1
 	
-	avgTemp=[]
+	#avgTemp=[]
 	while True:
 		ret, frame = webcam.read()
 #		if framenum > 0:
@@ -278,7 +281,7 @@ def getInput ():
 		if framenum > 0:
 			# Try using Python Imaging Library for the onionskin effect
 			frame = cv2.addWeighted(frame, 1, lastFrame, ALPHA, 0)  #ALPHA is 0.2
-
+			#frame = cv2.addWeighted(frame, 0.7, lastFrame, ALPHA, 0)
 		cv2.imshow("Live Video", frame)
 
 		keycode = cv2.waitKey(10)
@@ -361,8 +364,8 @@ VIDEO_HEIGHT = const.VIDEO_HEIGHT
 framenum=0
 lastFrame=""
 webcam=""
-avg1=[]
-avgbackup=[]
+#avg1=[]
+#avgbackup=[]
 modified = True	# Track unsaved changes
 savedMovies = "" # Track saved versions when modified = False, clear when modified = True
 #avg1=np.float32(1)
