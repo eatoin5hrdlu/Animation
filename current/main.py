@@ -21,13 +21,13 @@ def deleteImage ():
 
 	print "deleteImage"
 	if framenum > 0:
-		stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg"
+		stFileName = getFileName(framenum)
 		os.unlink(stFileName)
 		print "Deleted " + stFileName
 		framenum = framenum - 1
 		## Load the previous frame into lastFrame so the onionskin effect works
 		if framenum > 0:
-			lastFrame = cv2.imread(FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg")
+			lastFrame = scaleImage(cv2.imread(stFileName), VIDEO_WIDTH, VIDEO_HEIGHT)
 		else:
 			lastFrame = ""
 		modifiedMovie()
@@ -65,13 +65,13 @@ def initializeCamera ():
 		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, VIDEO_HEIGHT)
 		print "Press Esc to exit"
 		ret, temp = webcam.read() #discard first frame from webcam to make sure image is in sync
-		# Check webcam resolution
+		# Check video resolution
 		h, w = temp.shape[:2]
-		print "Webcam resolution = " + str(w) + "x" + str(h)
+		print "Video resolution = " + str(w) + "x" + str(h)
 		# If webcam resolution is different from VIDEO_WIDTH and VIDEO_HEIGHT, change the preview resolution
 		# Display a message and override preview_resolution variables
 		if (h <> VIDEO_HEIGHT) or (w <> VIDEO_WIDTH):
-			print "*** Changing the preview resolution from " + str(VIDEO_WIDTH) + "x" + str(VIDEO_HEIGHT) + " to " + str(w) + "x" + str(h) + " ***"
+			print "*** Changing the video resolution from " + str(VIDEO_WIDTH) + "x" + str(VIDEO_HEIGHT) + " to " + str(w) + "x" + str(h) + " ***"
 			VIDEO_HEIGHT = h
 			VIDEO_WIDTH = w
 		ret = True
@@ -120,7 +120,6 @@ def resetProgram():
 def resumeProgram():
 	global framenum
 	global lastFrame
-	#global avg1
 	
 	print "resumeProgram"
 	pathStr = FILE_PATH + "*.jpg"
@@ -133,11 +132,10 @@ def resumeProgram():
 	
 	if framenum > 0:
 		#display last image
-		stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg"
-		lastFrame = cv2.imread(FILE_PATH + str(framenum).zfill(6)+".jpg")
+		stFileName = getFileName(framenum)
+		lastFrame = cv2.imread(stFileName)
 		# scale the lastFrame image to match the VIDEO_WIDTH and VIDEO_HEIGHT
 		lastFrame = scaleImage(lastFrame, VIDEO_WIDTH, VIDEO_HEIGHT)
-		#avg1 = np.float32(lastFrame)
 	#initialize filmstrip display
 	
 def modifiedMovie():
@@ -153,7 +151,7 @@ def captureImage ():
 	global framenum
 	global webcam
 	global lastFrame
-	#global avg1
+
 	print "captureImage"
 	print "memory before capture = " + str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024)
 	if (IMAGE_WIDTH <> VIDEO_WIDTH) or (IMAGE_HEIGHT <> VIDEO_HEIGHT):
@@ -166,9 +164,8 @@ def captureImage ():
 	else:
 		ret, lastFrame = webcam.read()
 	print "memory after capture = " + str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024)
-	#avg1=np.float32(lastFrame)
 	framenum = framenum + 1 
-	stFileName = FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg" 
+	stFileName = getFileName(framenum)
 	cv2.imwrite(stFileName,lastFrame)
 	print "Saved " + stFileName
 	# scale the lastFrame image to match the VIDEO_WIDTH and VIDEO_HEIGHT
@@ -196,7 +193,7 @@ def playVideo ():
 	#videocmd = "mplayer -mf fps=" + str(fps) + ":type=jpg *.jpg mf://" + FILE_PATH + "*.jpg"
 	#process = subprocess.Popen(videocmd, shell=True)
 	for x in range (1, framenum+1):
-		frame = cv2.imread(FILE_PATH + str(x).zfill(6)+".jpg")
+		frame = cv2.imread(getFileName(x))
 		frame = scaleImage(frame, VIDEO_WIDTH, VIDEO_HEIGHT)
 		frames.append(frame)
 
@@ -266,9 +263,7 @@ def getInput ():
 	keycode = 0
 	global webcam
 	global lastFrame
-	#global avg1
-	
-	#avgTemp=[]
+
 	while True:
 		ret, frame = webcam.read()
 #		if framenum > 0:
@@ -323,6 +318,9 @@ def pathExists(path):
 		if exception.errno !=errno.EEXIST:
 			raise
 
+def getFileName(framenum):
+		return FILE_PATH + str(framenum).zfill(FILENAME_LENGTH)+".jpg"
+
 def setupGui():
 	root = Tk()
 	root.title ('Animation Station')
@@ -364,11 +362,8 @@ VIDEO_HEIGHT = const.VIDEO_HEIGHT
 framenum=0
 lastFrame=""
 webcam=""
-#avg1=[]
-#avgbackup=[]
 modified = True	# Track unsaved changes
 savedMovies = "" # Track saved versions when modified = False, clear when modified = True
-#avg1=np.float32(1)
 #create frames and movie directories if they don't exist
 pathExists(FILE_PATH)
 pathExists(MOVIE_PATH)
