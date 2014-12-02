@@ -1,4 +1,4 @@
-#from Tkinter import *
+#from Tkinter import *s
 #from ttk import *
 import const
 import cv2
@@ -274,8 +274,8 @@ def getInput ():
 #			frame = cv2.convertScaleAbs(avg1)
 #		cv2.imshow("Live Video", frame)
 		if framenum > 0:
-			# Try using Python Imaging Library for the onionskin effect
-			frame = cv2.addWeighted(frame, 1, lastFrame, ALPHA, 0)  #ALPHA is 0.2
+			# cv2.addWeighted is slow. Try using Python Imaging Library for the onionskin effect
+			frame = onionskin(frame, lastFrame, ALPHA)
 			#frame = cv2.addWeighted(frame, 0.7, lastFrame, ALPHA, 0)
 		cv2.imshow("Live Video", frame)
 
@@ -310,7 +310,14 @@ def getInput ():
 			saveVideo()
 						
 		time.sleep(0.05)
-
+		
+		
+def onionskin(frame, lastFrame, ALPHA):
+	x = time.time()
+	img = cv2.addWeighted(frame, 1, lastFrame, ALPHA, 0)  #ALPHA is 0.2
+	print "Elapsed time for onionskinning= " + str(time.time() - x)
+	return img
+	
 def pathExists(path):
 	try:
 		os.makedirs(path)
@@ -334,7 +341,7 @@ def setupGui():
 	
 	root.mainloop()
 
-### Golbal Variables ###
+### Global Variables ###
 root = ""
 mainframe = ""
 ### Initialize variables ###
@@ -370,6 +377,8 @@ pathExists(MOVIE_PATH)
 
 ### Main program ###
 try:
+	# Cleanup in case the program crashed
+	cv2.destroyAllWindows()
 	printVersions()
 	if initializeCamera() == True:
 		resumeProgram()
