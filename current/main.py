@@ -1,4 +1,4 @@
-#from Tkinter import *s
+#from Tkinter import *
 #from ttk import *
 import const
 import cv2
@@ -138,6 +138,7 @@ def resumeProgram():
 		lastFrame = scaleImage(lastFrame, VIDEO_WIDTH, VIDEO_HEIGHT)
 	#initialize filmstrip display
 	
+	
 def modifiedMovie():
 	print "modifiedMovie called"
 	global modified
@@ -153,6 +154,7 @@ def captureImage ():
 	global lastFrame
 
 	print "captureImage"
+	# Debug test to check for memory leak when changing camera resolution
 	print "memory before capture = " + str(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024)
 	if (IMAGE_WIDTH <> VIDEO_WIDTH) or (IMAGE_HEIGHT <> VIDEO_HEIGHT):
 		webcam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, IMAGE_WIDTH)
@@ -212,6 +214,7 @@ def playVideo ():
 def saveVideo():
 	print "saveVideo"
 	# Temporarily use mplayer to render and play the video
+	# Check for a python library to render the video to make it cross platform and easier to install
 	global fps
 	FPS_OUT=24
 	if framenum > 0:
