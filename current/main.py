@@ -319,6 +319,7 @@ def onionskin(frame, lastFrame, ALPHA):
 	x = time.time()
 	img = cv2.addWeighted(frame, 1, lastFrame, ALPHA, 0)  #ALPHA is 0.2
 	print "Elapsed time for onionskinning= " + str(time.time() - x)
+	# .22 seconds on raspberry pi when idle, goes up to .5 sec when moving mouse.#
 	return img
 	
 def pathExists(path):
