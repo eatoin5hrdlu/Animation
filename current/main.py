@@ -287,28 +287,28 @@ def getInput ():
 			print "Make sure caps lock and num lock are off!  Keycode=" + str(keycode)
 		if keycode == 27:
 			break
-		elif keycode == ord(NEWMOVIEKEY): # Replace with the acsii value
+		elif keycode == NEWMOVIEKEY:
 			print "n key pressed"
 			newMovie()
-		elif keycode == ord(CAPTUREIMAGEKEY):
+		elif keycode == CAPTUREIMAGEKEY:
 			captureImage() 
 			print "space key pressed"
-		elif keycode ==	ord(DELETEIMAGEKEY): # Replace with the acsii value
+		elif keycode ==	DELETEIMAGEKEY:
 			print "d key pressed"
 			deleteImage()
-		elif keycode ==	ord(PLAYVIDEOKEY): # Replace with the acsii value
+		elif keycode ==	PLAYVIDEOKEY: 
 			print "p key pressed"
 			playVideo()
-		elif keycode ==	ord(SLOWERKEY): # Replace with the acsii value
+		elif keycode ==	SLOWERKEY:
 			print "- key pressed"
 			slower()
-		elif keycode ==	ord(FASTERKEY): # Replace with the acsii value
+		elif keycode ==	FASTERKEY:
 			print "= key pressed"
 			faster()
-		elif keycode ==	ord(UPLOADVIDEOKEY): # Replace with the acsii value
+		elif keycode ==	UPLOADVIDEOKEY:
 			print "u key pressed"
 			uploadVideo()
-		elif keycode ==	ord(SAVEVIDEOKEY): # Replace with the acsii value
+		elif keycode ==	SAVEVIDEOKEY:
 			print "s key pressed"
 			saveVideo()
 						
@@ -360,14 +360,14 @@ ALPHA = const.ALPHA
 CAMERA = const.CAMERA
 IMAGE_WIDTH = const.IMAGE_WIDTH
 IMAGE_HEIGHT = const.IMAGE_HEIGHT
-NEWMOVIEKEY = const.NEWMOVIEKEY
-CAPTUREIMAGEKEY = const.CAPTUREIMAGEKEY
-DELETEIMAGEKEY = const.DELETEIMAGEKEY
-PLAYVIDEOKEY = const.PLAYVIDEOKEY
-SLOWERKEY = const.SLOWERKEY
-FASTERKEY = const.FASTERKEY
-UPLOADVIDEOKEY = const.UPLOADVIDEOKEY
-SAVEVIDEOKEY = const.SAVEVIDEOKEY
+NEWMOVIEKEY = ord(const.NEWMOVIEKEY)
+CAPTUREIMAGEKEY = ord(const.CAPTUREIMAGEKEY)
+DELETEIMAGEKEY = ord(const.DELETEIMAGEKEY)
+PLAYVIDEOKEY = ord(const.PLAYVIDEOKEY)
+SLOWERKEY = ord(const.SLOWERKEY)
+FASTERKEY = ord(const.FASTERKEY)
+UPLOADVIDEOKEY = ord(const.UPLOADVIDEOKEY)
+SAVEVIDEOKEY = ord(const.SAVEVIDEOKEY)
 VIDEO_WIDTH = const.VIDEO_WIDTH
 VIDEO_HEIGHT = const.VIDEO_HEIGHT
 framenum=0
