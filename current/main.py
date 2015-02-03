@@ -205,7 +205,7 @@ def playVideo ():
 	for x in range (0, framenum):
 		cv2.imshow("play window",frames[x])
 		keycode = cv2.waitKey(1)
-		time.sleep(1/fps)
+		time.sleep(1.0/fps)	# divide by a float to make sure a float is returned, rather than an integer
 	#wait 1 second before closing the window
 	time.sleep(1)
 	cv2.destroyWindow("play window")
@@ -312,8 +312,8 @@ def getInput ():
 			print "s key pressed"
 			saveVideo()
 						
-		time.sleep(0.05)
-		
+		#time.sleep(0.05)
+		time.sleep(0.2)
 		
 def onionskin(frame, lastFrame, ALPHA):
 	x = time.time()
