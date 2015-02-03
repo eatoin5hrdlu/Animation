@@ -6,7 +6,7 @@ FILENAME_LENGTH = 6
 FILE_PATH = "./frames/"
 MOVIE_PATH = "./movies/"
 ALPHA = 0.3
-CAMERA = 1
+CAMERA = 0
 # There is a memory leak in OpenCV ($Rev: 4557) when setting the camera resolution.
 # Set the video and image dimensions the same to avoid the problem until OpenCV is updated in the Raspberry Pi repository.
 VIDEO_WIDTH = 640

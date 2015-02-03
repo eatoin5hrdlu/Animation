@@ -200,7 +200,7 @@ def playVideo ():
 		frames.append(frame)
 
 	cv2.imshow("play window",frames[0])
-	cv2.waitKey(500)
+	cv2.waitKey(500)	# allow time for the raspberry pi to display the new window on the screen
 
 	for x in range (0, framenum):
 		cv2.imshow("play window",frames[x])
